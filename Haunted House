@@ -1,0 +1,505 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Play, 
+  Volume2, 
+  Home,
+  ArrowRight,
+  CheckCircle2,
+  XCircle,
+  ArrowLeft
+} from 'lucide-react';
+
+// --- VOCABULARY & DATA ---
+const ROOMS = [
+  { 
+    id: 'living_room', 
+    name: 'Living Room', 
+    icon: '🛋️', 
+    color: 'from-orange-700 to-orange-900 border-orange-500', 
+    objects: [
+      { 
+        id: 'lr_sofa', name: 'Sofa', icon: '🛋️', monster: { name: 'zombie', icon: '🧟' }, 
+        action: 'The zombie is sleeping.', 
+        options: [
+          { text: 'The zombie is sleeping.', emoji: '💤' },
+          { text: 'The zombie is cooking a potion.', emoji: '🍲' },
+          { text: 'The zombie is washing its hands.', emoji: '🧼' },
+          { text: 'The zombie is flying in the sky.', emoji: '🦇' }
+        ] 
+      },
+      { 
+        id: 'lr_tv', name: 'TV', icon: '📺', monster: { name: 'ghost', icon: '👻' }, 
+        action: 'The ghost is watching TV.', 
+        options: [
+          { text: 'The ghost is eating candy.', emoji: '🍬' },
+          { text: 'The ghost is watching TV.', emoji: '📺' },
+          { text: 'The ghost is drinking pumpkin juice.', emoji: '🎃' },
+          { text: 'The ghost is jumping on the bed.', emoji: '🤸' }
+        ] 
+      },
+      { 
+        id: 'lr_book', name: 'Bookshelf', icon: '📚', monster: { name: 'vampire', icon: '🧛' }, 
+        action: 'The vampire is reading a book.', 
+        options: [
+          { text: 'The vampire is reading a book.', emoji: '📖' },
+          { text: 'The vampire is brushing its teeth.', emoji: '🪥' },
+          { text: 'The vampire is dancing to music.', emoji: '💃' },
+          { text: 'The vampire is hiding in the dark.', emoji: '🫣' }
+        ] 
+      },
+      { 
+        id: 'lr_rug', name: 'Rug', icon: '🧶', monster: { name: 'skeleton', icon: '💀' }, 
+        action: 'The skeleton is dancing to music.', 
+        options: [
+          { text: 'The skeleton is sleeping.', emoji: '💤' },
+          { text: 'The skeleton is washing its hands.', emoji: '🧼' },
+          { text: 'The skeleton is dancing to music.', emoji: '💃' },
+          { text: 'The skeleton is reading a book.', emoji: '📖' }
+        ] 
+      },
+    ]
+  },
+  { 
+    id: 'bedroom', 
+    name: 'Bedroom', 
+    icon: '🛏️', 
+    color: 'from-indigo-700 to-indigo-900 border-indigo-500', 
+    objects: [
+      { 
+        id: 'br_bed', name: 'Bed', icon: '🛏️', monster: { name: 'werewolf', icon: '🐺' }, 
+        action: 'The werewolf is jumping on the bed.', 
+        options: [
+          { text: 'The werewolf is watching TV.', emoji: '📺' },
+          { text: 'The werewolf is cooking a potion.', emoji: '🍲' },
+          { text: 'The werewolf is jumping on the bed.', emoji: '🤸' },
+          { text: 'The werewolf is hiding in the dark.', emoji: '🫣' }
+        ] 
+      },
+      { 
+        id: 'br_wardrobe', name: 'Wardrobe', icon: '🚪', monster: { name: 'mummy', icon: '🧻' }, 
+        action: 'The mummy is hiding in the dark.', 
+        options: [
+          { text: 'The mummy is hiding in the dark.', emoji: '🫣' },
+          { text: 'The mummy is flying in the sky.', emoji: '🦇' },
+          { text: 'The mummy is brushing its teeth.', emoji: '🪥' },
+          { text: 'The mummy is eating candy.', emoji: '🍬' }
+        ] 
+      },
+      { 
+        id: 'br_mirror', name: 'Mirror', icon: '🪞', monster: { name: 'witch', icon: '🧙‍♀️' }, 
+        action: 'The witch is brushing its teeth.', 
+        options: [
+          { text: 'The witch is washing its hands.', emoji: '🧼' },
+          { text: 'The witch is brushing its teeth.', emoji: '🪥' },
+          { text: 'The witch is drinking pumpkin juice.', emoji: '🎃' },
+          { text: 'The witch is sleeping.', emoji: '💤' }
+        ] 
+      },
+      { 
+        id: 'br_window', name: 'Window', icon: '🪟', monster: { name: 'bat', icon: '🦇' }, 
+        action: 'The bat is flying in the sky.', 
+        options: [
+          { text: 'The bat is dancing to music.', emoji: '💃' },
+          { text: 'The bat is jumping on the bed.', emoji: '🤸' },
+          { text: 'The bat is flying in the sky.', emoji: '🦇' },
+          { text: 'The bat is reading a book.', emoji: '📖' }
+        ] 
+      },
+    ]
+  },
+  { 
+    id: 'kitchen', 
+    name: 'Kitchen', 
+    icon: '🍳', 
+    color: 'from-red-700 to-red-900 border-red-500', 
+    objects: [
+      { 
+        id: 'ki_fridge', name: 'Fridge', icon: '🧊', monster: { name: 'zombie', icon: '🧟' }, 
+        action: 'The zombie is eating candy.', 
+        options: [
+          { text: 'The zombie is eating candy.', emoji: '🍬' },
+          { text: 'The zombie is watching TV.', emoji: '📺' },
+          { text: 'The zombie is brushing its teeth.', emoji: '🪥' },
+          { text: 'The zombie is flying in the sky.', emoji: '🦇' }
+        ] 
+      },
+      { 
+        id: 'ki_stove', name: 'Stove', icon: '🍳', monster: { name: 'witch', icon: '🧙‍♀️' }, 
+        action: 'The witch is cooking a potion.', 
+        options: [
+          { text: 'The witch is sleeping.', emoji: '💤' },
+          { text: 'The witch is jumping on the bed.', emoji: '🤸' },
+          { text: 'The witch is dancing to music.', emoji: '💃' },
+          { text: 'The witch is cooking a potion.', emoji: '🍲' }
+        ] 
+      },
+      { 
+        id: 'ki_table', name: 'Table', icon: '🪑', monster: { name: 'vampire', icon: '🧛' }, 
+        action: 'The vampire is drinking pumpkin juice.', 
+        options: [
+          { text: 'The vampire is drinking pumpkin juice.', emoji: '🎃' },
+          { text: 'The vampire is washing its hands.', emoji: '🧼' },
+          { text: 'The vampire is hiding in the dark.', emoji: '🫣' },
+          { text: 'The vampire is cooking a potion.', emoji: '🍲' }
+        ] 
+      },
+      { 
+        id: 'ki_sink', name: 'Sink', icon: '🚰', monster: { name: 'ghost', icon: '👻' }, 
+        action: 'The ghost is washing its hands.', 
+        options: [
+          { text: 'The ghost is reading a book.', emoji: '📖' },
+          { text: 'The ghost is washing its hands.', emoji: '🧼' },
+          { text: 'The ghost is sleeping.', emoji: '💤' },
+          { text: 'The ghost is eating candy.', emoji: '🍬' }
+        ] 
+      },
+    ]
+  },
+  { 
+    id: 'bathroom', 
+    name: 'Bathroom', 
+    icon: '🛁', 
+    color: 'from-cyan-700 to-cyan-900 border-cyan-500', 
+    objects: [
+      { 
+        id: 'ba_bathtub', name: 'Bathtub', icon: '🛁', monster: { name: 'skeleton', icon: '💀' }, 
+        action: 'The skeleton is washing its hands.', 
+        options: [
+          { text: 'The skeleton is washing its hands.', emoji: '🧼' },
+          { text: 'The skeleton is jumping on the bed.', emoji: '🤸' },
+          { text: 'The skeleton is reading a book.', emoji: '📖' },
+          { text: 'The skeleton is flying in the sky.', emoji: '🦇' }
+        ] 
+      },
+      { 
+        id: 'ba_toilet', name: 'Toilet', icon: '🚽', monster: { name: 'mummy', icon: '🧻' }, 
+        action: 'The mummy is hiding in the dark.', 
+        options: [
+          { text: 'The mummy is cooking a potion.', emoji: '🍲' },
+          { text: 'The mummy is dancing to music.', emoji: '💃' },
+          { text: 'The mummy is watching TV.', emoji: '📺' },
+          { text: 'The mummy is hiding in the dark.', emoji: '🫣' }
+        ] 
+      },
+      { 
+        id: 'ba_towel', name: 'Towel Rack', icon: '🧣', monster: { name: 'werewolf', icon: '🐺' }, 
+        action: 'The werewolf is brushing its teeth.', 
+        options: [
+          { text: 'The werewolf is sleeping.', emoji: '💤' },
+          { text: 'The werewolf is eating candy.', emoji: '🍬' },
+          { text: 'The werewolf is brushing its teeth.', emoji: '🪥' },
+          { text: 'The werewolf is drinking pumpkin juice.', emoji: '🎃' }
+        ] 
+      },
+      { 
+        id: 'ba_shower', name: 'Shower', icon: '🚿', monster: { name: 'bat', icon: '🦇' }, 
+        action: 'The bat is washing its wings.', 
+        options: [
+          { text: 'The bat is watching TV.', emoji: '📺' },
+          { text: 'The bat is reading a book.', emoji: '📖' },
+          { text: 'The bat is washing its wings.', emoji: '🧼' },
+          { text: 'The bat is jumping on the bed.', emoji: '🤸' }
+        ] 
+      },
+    ]
+  }
+];
+
+// --- AUDIO SYNTHESIZER ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+const playSound = (type) => {
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  const now = audioCtx.currentTime;
+
+  if (type === 'success') {
+    // Magic chime
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(523.25, now); // C5
+    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+    osc.start(now);
+    osc.stop(now + 0.5);
+  } else if (type === 'error') {
+    // Low buzz/error
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(150, now);
+    osc.frequency.exponentialRampToValueAtTime(80, now + 0.3);
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+    osc.start(now);
+    osc.stop(now + 0.3);
+  }
+};
+
+const speakSentence = (text) => {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.85; // Slower for EFL learners
+    utterance.pitch = 0.9; // Spooky deep pitch
+    window.speechSynthesis.speak(utterance);
+  }
+};
+
+export default function App() {
+  // --- STATE ---
+  const [screen, setScreen] = useState('home'); // 'home', 'room', 'quiz'
+  const [score, setScore] = useState(0);
+  const [completedObjects, setCompletedObjects] = useState([]); // Array of completed object IDs
+  const [currentRoom, setCurrentRoom] = useState(null);
+  const [currentQuiz, setCurrentQuiz] = useState(null);
+  
+  const [feedback, setFeedback] = useState(null); // 'correct', 'incorrect'
+  const [shake, setShake] = useState(false);
+
+  // --- GAME LOGIC ---
+  const selectRoom = (room) => {
+    setCurrentRoom(room);
+    setScreen('room');
+  };
+
+  const selectObject = (obj) => {
+    if (completedObjects.includes(obj.id)) return; // Prevent re-playing completed objects
+    setCurrentQuiz(obj);
+    setScreen('quiz');
+  };
+
+  const handleAnswer = (selectedAction) => {
+    if (selectedAction === currentQuiz.action) {
+      // CORRECT
+      playSound('success');
+      setFeedback('correct');
+      setScore(s => s + 10);
+      speakSentence(`Correct! ${currentQuiz.action}`);
+      
+      // Mark as completed and return to room after delay
+      setTimeout(() => {
+        setCompletedObjects(prev => [...prev, currentQuiz.id]);
+        setFeedback(null);
+        setScreen('room');
+        setCurrentQuiz(null);
+      }, 3500);
+    } else {
+      // INCORRECT
+      playSound('error');
+      setFeedback('incorrect');
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      setTimeout(() => setFeedback(null), 1500);
+    }
+  };
+
+  // Helper to get room progress
+  const getRoomProgress = (room) => {
+    const completedInRoom = room.objects.filter(obj => completedObjects.includes(obj.id)).length;
+    return `${completedInRoom}/4`;
+  };
+
+  return (
+    <div className="max-w-md mx-auto h-[100dvh] bg-slate-950 text-slate-100 flex flex-col relative overflow-hidden font-sans">
+      {/* Global Styles for Animations */}
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-8px); }
+          75% { transform: translateX(8px); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+      `}</style>
+
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-purple-950 via-slate-900 to-black z-0 pointer-events-none" />
+
+      {/* Top Bar (Active when not in home) */}
+      {screen !== 'home' && (
+        <div className="relative z-10 flex justify-between items-center p-4 border-b border-purple-900/50 bg-black/40 shadow-md">
+          <button 
+            onClick={() => {
+              if (screen === 'quiz') setScreen('room');
+              else setScreen('home');
+            }} 
+            className="p-3 bg-slate-800/80 rounded-xl text-purple-400 hover:text-white active:scale-95 transition"
+            aria-label="Go Back"
+          >
+            {screen === 'quiz' ? <ArrowLeft size={24} /> : <Home size={24} />}
+          </button>
+          
+          {screen === 'room' && currentRoom && (
+             <div className="font-bold text-slate-300">
+               {currentRoom.icon} {currentRoom.name}
+             </div>
+          )}
+
+          <div className="text-xl font-black text-orange-400 tracking-wider">
+            SCORE: {score}
+          </div>
+        </div>
+      )}
+
+      {/* MAIN CONTENT AREA */}
+      <div className="relative z-10 flex-grow flex flex-col overflow-y-auto px-4 py-6">
+        
+        {/* HOME SCREEN - Room Selection */}
+        {screen === 'home' && (
+          <div className="flex flex-col flex-grow w-full max-w-sm mx-auto justify-center">
+            <div className="text-center mb-10">
+                <div className="text-7xl mb-4 animate-[float_3s_ease-in-out_infinite]">🏰</div>
+                <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-purple-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]">
+                HAUNTED VERBS
+                </h1>
+                <p className="text-purple-300 text-base mt-2 font-semibold">
+                Tap a room to find the monsters and practice Present Continuous!
+                </p>
+            </div>
+
+            <div className="grid gap-4">
+              {ROOMS.map(room => {
+                const isComplete = getRoomProgress(room) === "4/4";
+                return (
+                  <button
+                    key={room.id}
+                    onClick={() => selectRoom(room)}
+                    className={`w-full min-h-[80px] rounded-2xl border-2 bg-gradient-to-r ${room.color} p-4 flex items-center gap-4 transform transition active:scale-95 shadow-lg relative overflow-hidden`}
+                  >
+                    <span className="text-4xl z-10">{room.icon}</span>
+                    <span className="text-2xl font-bold z-10 text-left flex-grow">{room.name}</span>
+                    
+                    {/* Progress Indicator */}
+                    <div className="z-10 flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full font-bold">
+                        {isComplete ? <CheckCircle2 className="text-green-400 w-5 h-5" /> : null}
+                        <span className={isComplete ? "text-green-400" : "text-slate-200"}>{getRoomProgress(room)}</span>
+                    </div>
+
+                    {isComplete && <div className="absolute inset-0 bg-black/40 z-0"></div>}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ROOM SCREEN - Object Selection */}
+        {screen === 'room' && currentRoom && (
+          <div className="flex flex-col flex-grow items-center w-full justify-center">
+            
+            <h2 className="text-2xl font-black text-orange-400 mb-8 text-center px-4 leading-tight">
+              What are the monsters doing in the {currentRoom.name}?
+            </h2>
+
+            <div className="grid grid-cols-2 gap-4 w-full max-w-[320px] mx-auto">
+              {currentRoom.objects.map(obj => {
+                const isCompleted = completedObjects.includes(obj.id);
+                
+                return (
+                  <button
+                    key={obj.id}
+                    onClick={() => selectObject(obj)}
+                    disabled={isCompleted}
+                    className={`w-full aspect-square min-h-[140px] rounded-3xl flex flex-col items-center justify-center gap-2 border-[3px] transition-all duration-300 relative ${
+                      isCompleted 
+                        ? 'bg-green-900/40 border-green-700 opacity-60' 
+                        : 'bg-indigo-900/40 border-indigo-500/50 hover:bg-indigo-800/60 active:scale-95 shadow-lg'
+                    }`}
+                  >
+                    {/* Completed Overlay Icon */}
+                    {isCompleted && (
+                        <div className="absolute top-2 right-2 bg-green-500 rounded-full p-1 shadow-md">
+                            <CheckCircle2 size={24} className="text-white" />
+                        </div>
+                    )}
+                    
+                    <span className={`text-6xl drop-shadow-md ${!isCompleted && 'animate-[float_3s_ease-in-out_infinite]'}`}>
+                      {isCompleted ? obj.monster.icon : obj.icon}
+                    </span>
+                    <span className="text-lg font-bold text-slate-200 capitalize mt-2">
+                        {obj.name}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* QUIZ SECTION */}
+        {screen === 'quiz' && currentQuiz && (
+          <div className="flex flex-col flex-grow items-center justify-center w-full">
+            
+            {/* Visual Monster Card */}
+            <div className="mb-6">
+                <div className="relative w-48 h-48 flex items-center justify-center mx-auto bg-indigo-950/80 rounded-full border-4 border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.4)]">
+                    <div className="text-6xl z-10 drop-shadow-2xl animate-[float_2s_ease-in-out_infinite] flex items-center gap-4">
+                        <span>{currentQuiz.monster.icon}</span>
+                        <span>{currentQuiz.options.find(opt => opt.text === currentQuiz.action)?.emoji}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Sentence & Audio Button */}
+            <div className="bg-slate-900/80 border-2 border-purple-800 p-6 rounded-3xl w-full text-center mb-8 shadow-xl relative">
+              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
+                <button 
+                  onClick={() => speakSentence(`What is the ${currentQuiz.monster.name} doing?`)}
+                  className="p-4 bg-orange-600 rounded-full text-white active:bg-orange-500 shadow-[0_0_15px_rgba(234,88,12,0.6)] transform transition active:scale-90"
+                >
+                  <Volume2 size={28} />
+                </button>
+              </div>
+              
+              <p className="text-xl md:text-2xl font-bold leading-relaxed text-slate-100 mt-6 mb-2">
+                What is the <span className="text-purple-400 capitalize">{currentQuiz.monster.name}</span> doing?
+              </p>
+            </div>
+
+            {/* Multiple Choice Options */}
+            <div className={`grid grid-cols-1 gap-3 w-full max-w-sm ${shake ? 'animate-[shake_0.5s_ease-in-out]' : ''}`}>
+              {currentQuiz.options.map(opt => (
+                <button
+                  key={opt.text}
+                  onClick={() => handleAnswer(opt.text)}
+                  disabled={feedback === 'correct'}
+                  className={`min-h-[70px] text-lg font-bold rounded-2xl border-4 transition-all active:scale-95 flex items-center justify-center px-4 py-3 leading-tight text-center ${
+                    feedback === 'correct' && opt.text === currentQuiz.action
+                      ? 'bg-green-600 border-green-400 text-white shadow-[0_0_20px_rgba(34,197,94,0.6)]'
+                      : 'bg-indigo-950 border-indigo-600 hover:bg-indigo-900 text-indigo-100'
+                  }`}
+                >
+                  <span>{opt.text}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Feedback Overlays */}
+            {feedback === 'correct' && (
+              <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none bg-green-900/30 backdrop-blur-[2px] animate-in fade-in duration-300">
+                <div className="bg-green-500 text-white px-8 py-5 rounded-full text-3xl font-black shadow-2xl flex items-center gap-4">
+                  <CheckCircle2 size={40} /> AWESOME!
+                </div>
+              </div>
+            )}
+            {feedback === 'incorrect' && (
+              <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none bg-red-900/20 animate-in fade-in duration-200">
+                <div className="bg-red-600 text-white px-8 py-4 rounded-full text-2xl font-black shadow-2xl flex items-center gap-3">
+                  <XCircle size={32} /> Try Again!
+                </div>
+              </div>
+            )}
+
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
